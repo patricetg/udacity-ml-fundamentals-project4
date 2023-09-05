@@ -1,0 +1,76 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Lambda Invoke -- serializeImageData Step",
+  "States": {
+    "Lambda Invoke -- serializeImageData Step": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-west-2:659095202386:function:serializeImageData:$LATEST",
+        "Payload.$": "$"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Lambda Invoke -- classifyImage Step"
+    },
+    "Lambda Invoke -- classifyImage Step": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-west-2:659095202386:function:classifiyImage:$LATEST",
+        "Payload": {
+          "sampleKey1": "sampleValue1",
+          "key3": 100,
+          "image_data.$": "$.body.image_data",
+          "s3_bucket.$": "$.body.s3_bucket",
+          "s3_key.$": "$.body.s3_key",
+          "prefix.$": "$.body.prefix"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Lambda Invoke -- inferencesFiltering Step"
+    },
+    "Lambda Invoke -- inferencesFiltering Step": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-west-2:659095202386:function:inferencesFiltering:$LATEST",
+        "Payload": {
+          "sampleKey1": "sampleValue1",
+          "image_data.$": "$.body.image_data",
+          "s3_bucket.$": "$.body.s3_bucket",
+          "s3_key.$": "$.body.s3_key",
+          "prefix.$": "$.body.prefix",
+          "inferences.$": "$.body.inferences"
+        }
+      },
+      "End": true
+    }
+  }
+}
