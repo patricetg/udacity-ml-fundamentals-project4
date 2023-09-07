@@ -1,7 +1,7 @@
 import json
 
 
-THRESHOLD = .5 #.93
+THRESHOLD = .8 #.93
 
 
 def lambda_handler(event, context):
